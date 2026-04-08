@@ -26,6 +26,15 @@ export type DayPlan = z.infer<typeof DayPlanSchema>;
 export type WeekPlan = z.infer<typeof WeekPlanSchema>;
 export type TripPlan = z.infer<typeof TripPlanSchema>;
 
+export type StoredTrip = {
+  id: string;
+  version: number;
+  createdAt: string;
+  input: TripInput;
+  plan: TripPlan;
+  label?: string;
+};
+
 export const TripPlanJsonSchema = {
   type: "object",
   properties: {

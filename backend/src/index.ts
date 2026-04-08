@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import tripRouter from "./routes/trip";
+import { closeDb } from "./db/database";
 
 const app = express();
 app.use(cors());
@@ -10,8 +11,15 @@ app.get("/health", (_, res) => {
   res.json({ status: "ok" });
 });
 
-app.use("/trip", tripRouter);
+app.use("/trips", tripRouter);
 
-app.listen(3001, () =>
+const server = app.listen(3001, () =>
   console.log("✅ Backend running on http://localhost:3001")
 );
+
+process.on("SIGTERM", () => {
+  server.close(() => {
+    closeDb();
+    process.exit(0);
+  });
+});

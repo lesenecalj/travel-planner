@@ -23,13 +23,12 @@ export class PlannerAgent {
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
       const start = Date.now();
       try {
-        const result = await this.llm.chatStructured(messages, TripPlanSchema, TripPlanJsonSchema);
+        const plan = await this.llm.chatStructured(messages, TripPlanSchema, TripPlanJsonSchema);
         console.log(`[PlannerAgent] success in ${Date.now() - start}ms (attempt ${attempt + 1})`);
-        return result;
+        return plan;
       } catch (e) {
         lastError = e as Error;
-        const duration = Date.now() - start;
-        console.warn(`[PlannerAgent] attempt ${attempt + 1} failed after ${duration}ms: ${lastError.message}`);
+        console.warn(`[PlannerAgent] attempt ${attempt + 1} failed after ${Date.now() - start}ms: ${lastError.message}`);
         if (attempt < MAX_RETRIES) {
           messages.push(
             { role: "assistant", content: "" },
