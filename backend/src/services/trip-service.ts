@@ -1,5 +1,5 @@
 import { PlannerAgent } from "../agents/planner-agent";
-import { TripInput, StoredTrip } from "../types/trip";
+import { TripInput, TripInputSchema, StoredTrip } from "../types/trip";
 import { TripRepository } from "../repositories/trip-repository";
 
 export class TripService {
@@ -15,9 +15,12 @@ export class TripService {
     return this.repo.create(input, plan);
   }
 
-  async updateTrip(id: string, input: TripInput, label?: string): Promise<StoredTrip> {
-    const plan = await this.planner.run(input);
-    return this.repo.update(id, input, plan, label);
+  async updateTrip(id: string, overrides: Partial<TripInput>): Promise<StoredTrip> {
+    const existing = this.repo.findById(id);
+    if (!existing) throw new NotFoundError(`Trip not found: ${id}`);
+    const merged = TripInputSchema.parse({ ...existing.input, ...overrides });
+    const plan = await this.planner.run(merged);
+    return this.repo.update(id, merged, plan);
   }
 
   getTrip(id: string): StoredTrip | null {
@@ -27,4 +30,10 @@ export class TripService {
   listTrips(): StoredTrip[] {
     return this.repo.list();
   }
+
+  deleteTrip(id: string): StoredTrip | null {
+    return this.repo.delete(id);
+  }
 }
+
+export class NotFoundError extends Error {}

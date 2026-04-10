@@ -1,11 +1,14 @@
 import { z } from "zod";
 
-export type TripInput = {
-  destination: string;
-  durationWeeks: number;
-  pace: "slow" | "normal" | "fast";
-  interests: string[];
-};
+export const TripInputSchema = z.object({
+  destination: z.string().min(1),
+  durationWeeks: z.number().int().min(1).max(8),
+  pace: z.enum(["slow", "normal", "fast"]),
+  interests: z.array(z.string().min(1)).min(1),
+  label: z.string().optional(),
+});
+
+export type TripInput = z.infer<typeof TripInputSchema>;
 
 export const DayPlanSchema = z.object({
   day: z.number().int(),
@@ -30,36 +33,9 @@ export type StoredTrip = {
   id: string;
   version: number;
   createdAt: string;
+  updatedAt?: string;
   input: TripInput;
   plan: TripPlan;
-  label?: string;
 };
 
-export const TripPlanJsonSchema = {
-  type: "object",
-  properties: {
-    weeks: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          week: { type: "number" },
-          theme: { type: "string" },
-          days: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                day: { type: "number" },
-                activities: { type: "array", items: { type: "string" } },
-              },
-              required: ["day", "activities"],
-            },
-          },
-        },
-        required: ["week", "theme", "days"],
-      },
-    },
-  },
-  required: ["weeks"],
-};
+export const TripPlanJsonSchema = z.toJSONSchema(TripPlanSchema);
