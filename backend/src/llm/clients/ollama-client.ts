@@ -1,21 +1,14 @@
 import { ZodType } from "zod";
-import { BaseLLMClient, Message, readLLMConfig } from "./llm-client";
+import { BaseLLMClient, Message } from "./llm-client";
 
 export class OllamaClient extends BaseLLMClient {
   private readonly url: string;
   private readonly model: string;
-  private readonly maxTokens: number;
-  private readonly temperature: number;
-  private readonly timeoutMs: number;
 
   constructor(model = "llama3.1", url = process.env.OLLAMA_URL ?? "http://localhost:11434") {
     super();
     this.model = model;
     this.url = url;
-    const config = readLLMConfig();
-    this.maxTokens = config.maxTokens;
-    this.temperature = config.temperature;
-    this.timeoutMs = config.timeoutMs;
   }
 
   async chatStructured<T>(messages: Message[], schema: ZodType<T>, jsonSchema: object): Promise<T> {

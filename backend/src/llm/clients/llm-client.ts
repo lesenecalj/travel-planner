@@ -24,6 +24,17 @@ export function readLLMConfig(): LLMConfig {
 }
 
 export abstract class BaseLLMClient implements LLMClient {
+  protected readonly maxTokens: number;
+  protected readonly temperature: number;
+  protected readonly timeoutMs: number;
+
+  constructor() {
+    const config = readLLMConfig();
+    this.maxTokens = config.maxTokens;
+    this.temperature = config.temperature;
+    this.timeoutMs = config.timeoutMs;
+  }
+
   abstract chatStructured<T>(messages: Message[], schema: ZodType<T>, jsonSchema: object): Promise<T>;
   protected abstract callApi(body: unknown): Promise<string>;
 }

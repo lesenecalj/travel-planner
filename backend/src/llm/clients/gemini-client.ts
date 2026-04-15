@@ -1,14 +1,11 @@
 import { ZodType } from "zod";
-import { BaseLLMClient, Message, readLLMConfig } from "./llm-client";
+import { BaseLLMClient, Message } from "./llm-client";
 
 const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta";
 
 export class GeminiClient extends BaseLLMClient {
   private readonly apiKey: string;
   private readonly model: string;
-  private readonly maxTokens: number;
-  private readonly temperature: number;
-  private readonly timeoutMs: number;
 
   constructor(model = "gemini-2.0-flash") {
     super();
@@ -16,10 +13,6 @@ export class GeminiClient extends BaseLLMClient {
     if (!apiKey) throw new Error("GEMINI_API_KEY environment variable is required");
     this.apiKey = apiKey;
     this.model = model;
-    const config = readLLMConfig();
-    this.maxTokens = config.maxTokens;
-    this.temperature = config.temperature;
-    this.timeoutMs = config.timeoutMs;
   }
 
   async chatStructured<T>(messages: Message[], schema: ZodType<T>, jsonSchema: object): Promise<T> {
