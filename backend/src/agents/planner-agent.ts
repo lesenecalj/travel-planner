@@ -1,5 +1,5 @@
 import { TripInput, TripPlan, TripPlanSchema, TripPlanJsonSchema } from "../types/trip";
-import { LLMClient } from "../llm/llm-client";
+import { LLMClient } from "../llm/clients/llm-client";
 import { createLLMClient } from "../llm";
 import { PLANNER_SYSTEM_PROMPT } from "./planner.system";
 
