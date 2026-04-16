@@ -4,9 +4,10 @@ import { trips, TripRow } from "../db/schema";
 import { StoredTrip, TripInput, TripPlan } from "../types/trip";
 
 export class TripRepository {
-  create(input: TripInput, plan: TripPlan): StoredTrip {
+  create(input: TripInput, plan: TripPlan, userId: string): StoredTrip {
     const row: TripRow = {
       id: crypto.randomUUID(),
+      userId,
       version: 1,
       createdAt: new Date().toISOString(),
       updatedAt: null,
@@ -36,6 +37,10 @@ export class TripRepository {
     return getDb().select().from(trips).orderBy(desc(trips.createdAt)).all().map(toStoredTrip);
   }
 
+  listByUser(userId: string): StoredTrip[] {
+    return getDb().select().from(trips).where(eq(trips.userId, userId)).orderBy(desc(trips.createdAt)).all().map(toStoredTrip);
+  }
+
   delete(id: string): StoredTrip | null {
     const [deleted] = getDb().delete(trips).where(eq(trips.id, id)).returning().all();
     return deleted ? toStoredTrip(deleted) : null;
@@ -45,6 +50,7 @@ export class TripRepository {
 function toStoredTrip(row: TripRow): StoredTrip {
   return {
     id: row.id,
+    userId: row.userId,
     version: row.version,
     createdAt: row.createdAt,
     ...(row.updatedAt ? { updatedAt: row.updatedAt } : {}),

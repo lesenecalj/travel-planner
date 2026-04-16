@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import tripRouter from "./routes/trip";
+import userRouter from "./routes/user";
+import { errorHandler } from "./middleware/error-handler";
 import { closeDb } from "./db/database";
 
 
@@ -22,6 +24,8 @@ app.get("/health", (_, res) => {
 });
 
 app.use("/trips", tripRouter);
+app.use("/users", userRouter);
+app.use(errorHandler);
 
 const server = app.listen(3001, () =>
   console.log("✅ Backend running on http://localhost:3001")

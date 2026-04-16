@@ -22,6 +22,20 @@
       "when": 1775779200000,
       "tag": "0002_remove_label_column",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1744848000000,
+      "tag": "0003_add_users_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1744934400000,
+      "tag": "0004_trips_add_user_id",
+      "breakpoints": true
     }
   ]
 }

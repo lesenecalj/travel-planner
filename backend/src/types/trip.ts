@@ -31,6 +31,7 @@ export type TripPlan = z.infer<typeof TripPlanSchema>;
 
 export type StoredTrip = {
   id: string;
+  userId: string;
   version: number;
   createdAt: string;
   updatedAt?: string;
