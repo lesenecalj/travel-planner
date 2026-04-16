@@ -1,7 +1,9 @@
 import { Router, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
+import { z } from "zod";
 import { TripInputSchema } from "../types/trip";
-import { TripService, NotFoundError } from "../services/trip-service";
+import { TripService } from "../services/trip-service";
+import { NotFoundError } from "../errors";
 
 const router = Router();
 const service = new TripService();
@@ -15,59 +17,36 @@ const llmLimiter = rateLimit({
 });
 
 const TripUpdateSchema = TripInputSchema.omit({ label: true }).partial();
+const CreateTripBodySchema = TripInputSchema.extend({ userId: z.string().uuid() });
+const ListTripsQuerySchema = z.object({ userId: z.string().uuid().optional() });
 
 router.post("/", llmLimiter, async (req: Request, res: Response) => {
-  const parsed = TripInputSchema.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.flatten() });
-    return;
-  }
-  try {
-    const trip = await service.createTrip(parsed.data);
-    res.status(201).json(trip);
-  } catch (e) {
-    res.status(500).json({ error: (e as Error).message });
-  }
+  const { userId, ...input } = CreateTripBodySchema.parse(req.body);
+  const trip = await service.createTrip(input, userId);
+  res.status(201).json(trip);
 });
 
-router.get("/", (_req: Request, res: Response) => {
-  try {
-    res.json(service.listTrips());
-  } catch (e) {
-    res.status(500).json({ error: (e as Error).message });
-  }
+router.get("/", (req: Request, res: Response) => {
+  const { userId } = ListTripsQuerySchema.parse(req.query);
+  res.json(userId ? service.listTripsByUser(userId) : service.listTrips());
 });
 
 router.get("/:id", (req: Request, res: Response) => {
-  try {
-    const trip = service.getTrip(req.params.id as string);
-    if (!trip) { res.status(404).json({ error: "Trip not found" }); return; }
-    res.json(trip);
-  } catch (e) {
-    res.status(500).json({ error: (e as Error).message });
-  }
+  const trip = service.getTrip(req.params.id as string);
+  if (!trip) throw new NotFoundError("Trip not found");
+  res.json(trip);
 });
 
 router.put("/:id", llmLimiter, async (req: Request, res: Response) => {
-  const bodyParsed = TripUpdateSchema.safeParse(req.body);
-  if (!bodyParsed.success) { res.status(400).json({ error: bodyParsed.error.flatten() }); return; }
-  try {
-    const updated = await service.updateTrip(req.params.id as string, bodyParsed.data);
-    res.json(updated);
-  } catch (e) {
-    if (e instanceof NotFoundError) { res.status(404).json({ error: e.message }); return; }
-    res.status(500).json({ error: (e as Error).message });
-  }
+  const body = TripUpdateSchema.parse(req.body);
+  const updated = await service.updateTrip(req.params.id as string, body);
+  res.json(updated);
 });
 
 router.delete("/:id", (req: Request, res: Response) => {
-  try {
-    const deleted = service.deleteTrip(req.params.id as string);
-    if (!deleted) { res.status(404).json({ error: "Trip not found" }); return; }
-    res.json(deleted);
-  } catch (e) {
-    res.status(500).json({ error: (e as Error).message });
-  }
+  const deleted = service.deleteTrip(req.params.id as string);
+  if (!deleted) throw new NotFoundError("Trip not found");
+  res.json(deleted);
 });
 
 export default router;
