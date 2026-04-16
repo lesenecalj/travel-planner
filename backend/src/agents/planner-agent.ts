@@ -1,5 +1,5 @@
 import { TripInput, TripPlan, TripPlanSchema, TripPlanJsonSchema } from "../types/trip";
-import { LLMClient } from "../llm/llm-client";
+import { LLMClient, Message } from "../llm/clients/llm-client";
 import { createLLMClient } from "../llm";
 import { PLANNER_SYSTEM_PROMPT } from "./planner.system";
 
@@ -13,7 +13,7 @@ export class PlannerAgent {
   }
 
   async run(input: TripInput): Promise<TripPlan> {
-    const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
+    const messages: Message[] = [
       { role: "system", content: PLANNER_SYSTEM_PROMPT },
       { role: "user", content: this.buildPrompt(input) },
     ];
