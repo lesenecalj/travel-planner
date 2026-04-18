@@ -2,11 +2,12 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { TripInput, TripPlan } from "../types/trip";
 
 export const users = sqliteTable("users", {
-  id:        text("id").primaryKey(),
-  email:     text("email").notNull().unique(),
-  name:      text("name").notNull(),
-  createdAt: text("created_at").notNull(),
-  updatedAt: text("updated_at"),
+  id:           text("id").primaryKey(),
+  email:        text("email").notNull().unique(),
+  name:         text("name").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  createdAt:    text("created_at").notNull(),
+  updatedAt:    text("updated_at"),
 });
 
 export type UserRow = typeof users.$inferSelect;

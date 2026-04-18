@@ -29,7 +29,7 @@ export type DayPlan = z.infer<typeof DayPlanSchema>;
 export type WeekPlan = z.infer<typeof WeekPlanSchema>;
 export type TripPlan = z.infer<typeof TripPlanSchema>;
 
-export type StoredTrip = {
+export type TripRecord = {
   id: string;
   userId: string;
   version: number;
@@ -38,5 +38,7 @@ export type StoredTrip = {
   input: TripInput;
   plan: TripPlan;
 };
+
+export type TripDto = TripRecord;
 
 export const TripPlanJsonSchema = z.toJSONSchema(TripPlanSchema);
