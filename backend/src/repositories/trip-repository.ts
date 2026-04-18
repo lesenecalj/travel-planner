@@ -1,10 +1,10 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { getDb } from "../db/database";
 import { trips, TripRow } from "../db/schema";
-import { StoredTrip, TripInput, TripPlan } from "../types/trip";
+import { TripRecord, TripInput, TripPlan } from "../types/trip";
 
 export class TripRepository {
-  create(input: TripInput, plan: TripPlan, userId: string): StoredTrip {
+  create(input: TripInput, plan: TripPlan, userId: string): TripRecord {
     const row: TripRow = {
       id: crypto.randomUUID(),
       userId,
@@ -15,39 +15,39 @@ export class TripRepository {
       plan,
     };
     getDb().insert(trips).values(row).run();
-    return toStoredTrip(row);
+    return toTripRecord(row);
   }
 
-  update(id: string, input: TripInput, plan: TripPlan): StoredTrip {
+  update(id: string, input: TripInput, plan: TripPlan): TripRecord {
     const [updated] = getDb()
       .update(trips)
       .set({ version: sql`${trips.version} + 1`, input, plan, updatedAt: new Date().toISOString() })
       .where(eq(trips.id, id))
       .returning()
       .all();
-    return toStoredTrip(updated);
+    return toTripRecord(updated);
   }
 
-  findById(id: string): StoredTrip | null {
+  findById(id: string): TripRecord | null {
     const [row] = getDb().select().from(trips).where(eq(trips.id, id)).all();
-    return row ? toStoredTrip(row) : null;
+    return row ? toTripRecord(row) : null;
   }
 
-  list(): StoredTrip[] {
-    return getDb().select().from(trips).orderBy(desc(trips.createdAt)).all().map(toStoredTrip);
+  list(): TripRecord[] {
+    return getDb().select().from(trips).orderBy(desc(trips.createdAt)).all().map(toTripRecord);
   }
 
-  listByUser(userId: string): StoredTrip[] {
-    return getDb().select().from(trips).where(eq(trips.userId, userId)).orderBy(desc(trips.createdAt)).all().map(toStoredTrip);
+  listByUser(userId: string): TripRecord[] {
+    return getDb().select().from(trips).where(eq(trips.userId, userId)).orderBy(desc(trips.createdAt)).all().map(toTripRecord);
   }
 
-  delete(id: string): StoredTrip | null {
+  delete(id: string): TripRecord | null {
     const [deleted] = getDb().delete(trips).where(eq(trips.id, id)).returning().all();
-    return deleted ? toStoredTrip(deleted) : null;
+    return deleted ? toTripRecord(deleted) : null;
   }
 }
 
-function toStoredTrip(row: TripRow): StoredTrip {
+function toTripRecord(row: TripRow): TripRecord {
   return {
     id: row.id,
     userId: row.userId,

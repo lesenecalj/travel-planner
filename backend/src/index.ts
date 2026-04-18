@@ -3,7 +3,9 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import tripRouter from "./routes/trip";
 import userRouter from "./routes/user";
+import authRouter from "./routes/auth";
 import { errorHandler } from "./middleware/error-handler";
+import { requireAuth } from "./middleware/require-auth";
 import { closeDb } from "./db/database";
 
 
@@ -23,7 +25,8 @@ app.get("/health", (_, res) => {
   res.json({ status: "ok" });
 });
 
-app.use("/trips", tripRouter);
+app.use("/auth", authRouter);
+app.use("/trips", requireAuth, tripRouter);
 app.use("/users", userRouter);
 app.use(errorHandler);
 

@@ -1,6 +1,13 @@
-import { StoredUser, UserInput, UserUpdateInput } from "../types/user";
+import bcrypt from "bcryptjs";
+import { UserDto, UserRecord, UserInput, UserUpdateInput } from "../types/user";
 import { UserRepository } from "../repositories/user-repository";
 import { NotFoundError, ConflictError } from "../errors";
+
+const BCRYPT_ROUNDS = 12;
+
+function toUserDto({ passwordHash: _, ...dto }: UserRecord): UserDto {
+  return dto;
+}
 
 export class UserService {
   private repo: UserRepository;
@@ -9,13 +16,15 @@ export class UserService {
     this.repo = repo;
   }
 
-  createUser(input: UserInput): StoredUser {
+  async createUser(input: UserInput): Promise<UserDto> {
     const existing = this.repo.findByEmail(input.email);
     if (existing) throw new ConflictError(`Email already in use: ${input.email}`);
-    return this.repo.create(input);
+    const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
+    const { password: _, ...rest } = input;
+    return toUserDto(this.repo.create({ ...rest, passwordHash }));
   }
 
-  updateUser(id: string, updates: UserUpdateInput): StoredUser {
+  updateUser(id: string, updates: UserUpdateInput): UserDto {
     const existing = this.repo.findById(id);
     if (!existing) throw new NotFoundError(`User not found: ${id}`);
 
@@ -24,19 +33,21 @@ export class UserService {
       if (conflict) throw new ConflictError(`Email already in use: ${updates.email}`);
     }
 
-    return this.repo.update(id, updates);
+    return toUserDto(this.repo.update(id, updates));
   }
 
-  getUser(id: string): StoredUser | null {
-    return this.repo.findById(id);
+  getUser(id: string): UserDto | null {
+    const record = this.repo.findById(id);
+    return record ? toUserDto(record) : null;
   }
 
-  listUsers(): StoredUser[] {
-    return this.repo.list();
+  listUsers(): UserDto[] {
+    return this.repo.list().map(toUserDto);
   }
 
-  deleteUser(id: string): StoredUser | null {
-    return this.repo.delete(id);
+  deleteUser(id: string): UserDto | null {
+    const record = this.repo.delete(id);
+    return record ? toUserDto(record) : null;
   }
 }
 

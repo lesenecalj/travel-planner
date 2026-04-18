@@ -36,6 +36,13 @@
       "when": 1744934400000,
       "tag": "0004_trips_add_user_id",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1745020800000,
+      "tag": "0005_users_add_password_hash",
+      "breakpoints": true
     }
   ]
 }
