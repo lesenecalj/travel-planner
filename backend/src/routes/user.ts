@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { UserInputSchema, UserUpdateSchema } from "../types/user";
 import { UserService } from "../services/user-service";
-import { NotFoundError } from "../errors";
+import { ForbiddenError, NotFoundError } from "../errors";
 import { requireAuth } from "../middleware/require-auth";
 
 const router = Router();
@@ -24,11 +24,13 @@ router.get("/:id", requireAuth, (req: Request, res: Response) => {
 });
 
 router.patch("/:id", requireAuth, (req: Request, res: Response) => {
+  if (req.auth.sub !== req.params.id) throw new ForbiddenError("Cannot modify another user's account");
   const data = UserUpdateSchema.parse(req.body);
   res.json(service.updateUser(req.params.id as string, data));
 });
 
 router.delete("/:id", requireAuth, (req: Request, res: Response) => {
+  if (req.auth.sub !== req.params.id) throw new ForbiddenError("Cannot delete another user's account");
   const deleted = service.deleteUser(req.params.id as string);
   if (!deleted) throw new NotFoundError("User not found");
   res.json(deleted);

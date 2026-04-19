@@ -17,12 +17,11 @@ const llmLimiter = rateLimit({
 });
 
 const TripUpdateSchema = TripInputSchema.omit({ label: true }).partial();
-const CreateTripBodySchema = TripInputSchema.extend({ userId: z.string().uuid() });
 const ListTripsQuerySchema = z.object({ userId: z.string().uuid().optional() });
 
 router.post("/", llmLimiter, async (req: Request, res: Response) => {
-  const { userId, ...input } = CreateTripBodySchema.parse(req.body);
-  const trip = await service.createTrip(input, userId);
+  const input = TripInputSchema.parse(req.body);
+  const trip = await service.createTrip(input, req.auth.sub);
   res.status(201).json(trip);
 });
 
