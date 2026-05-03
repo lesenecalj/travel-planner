@@ -1,9 +1,8 @@
 import { Router, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
-import { z } from "zod";
 import { TripInputSchema } from "../types/trip";
 import { TripService } from "../services/trip-service";
-import { NotFoundError } from "../errors";
+import { ForbiddenError, NotFoundError } from "../errors";
 
 const router = Router();
 const service = new TripService();
@@ -16,9 +15,6 @@ const llmLimiter = rateLimit({
   message: { error: "Too many requests, please try again later." },
 });
 
-const TripUpdateSchema = TripInputSchema.omit({ label: true }).partial();
-const ListTripsQuerySchema = z.object({ userId: z.string().uuid().optional() });
-
 router.post("/", llmLimiter, async (req: Request, res: Response) => {
   const input = TripInputSchema.parse(req.body);
   const trip = await service.createTrip(input, req.auth.sub);
@@ -26,25 +22,30 @@ router.post("/", llmLimiter, async (req: Request, res: Response) => {
 });
 
 router.get("/", (req: Request, res: Response) => {
-  const { userId } = ListTripsQuerySchema.parse(req.query);
-  res.json(userId ? service.listTripsByUser(userId) : service.listTrips());
+  res.json(service.listTripsByUser(req.auth.sub));
 });
 
 router.get("/:id", (req: Request, res: Response) => {
   const trip = service.getTrip(req.params.id as string);
   if (!trip) throw new NotFoundError("Trip not found");
+  if (!trip.isPublic && trip.userId !== req.auth.sub) throw new ForbiddenError("Access denied");
   res.json(trip);
 });
 
 router.put("/:id", llmLimiter, async (req: Request, res: Response) => {
-  const body = TripUpdateSchema.parse(req.body);
+  const trip = service.getTrip(req.params.id as string);
+  if (!trip) throw new NotFoundError("Trip not found");
+  if (trip.userId !== req.auth.sub) throw new ForbiddenError("Access denied");
+  const body = TripInputSchema.parse(req.body);
   const updated = await service.updateTrip(req.params.id as string, body);
   res.json(updated);
 });
 
 router.delete("/:id", (req: Request, res: Response) => {
+  const trip = service.getTrip(req.params.id as string);
+  if (!trip) throw new NotFoundError("Trip not found");
+  if (trip.userId !== req.auth.sub) throw new ForbiddenError("Access denied");
   const deleted = service.deleteTrip(req.params.id as string);
-  if (!deleted) throw new NotFoundError("Trip not found");
   res.json(deleted);
 });
 

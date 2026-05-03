@@ -6,6 +6,7 @@ export const TripInputSchema = z.object({
   pace: z.enum(["slow", "normal", "fast"]),
   interests: z.array(z.string().min(1)).min(1),
   label: z.string().optional(),
+  isPublic: z.boolean().default(false),
 });
 
 export type TripInput = z.infer<typeof TripInputSchema>;
@@ -32,10 +33,10 @@ export type TripPlan = z.infer<typeof TripPlanSchema>;
 export type TripRecord = {
   id: string;
   userId: string;
+  isPublic: boolean;
   version: number;
   createdAt: string;
   updatedAt?: string;
-  input: TripInput;
   plan: TripPlan;
 };
 

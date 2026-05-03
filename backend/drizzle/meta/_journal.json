@@ -43,6 +43,20 @@
       "when": 1745020800000,
       "tag": "0005_users_add_password_hash",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1745107200000,
+      "tag": "0006_trips_add_is_public",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1746230400000,
+      "tag": "0007_trips_remove_input",
+      "breakpoints": true
     }
   ]
 }

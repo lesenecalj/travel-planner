@@ -8,10 +8,10 @@ export class TripRepository {
     const row: TripRow = {
       id: crypto.randomUUID(),
       userId,
+      isPublic: input.isPublic ?? false,
       version: 1,
       createdAt: new Date().toISOString(),
       updatedAt: null,
-      input,
       plan,
     };
     getDb().insert(trips).values(row).run();
@@ -21,7 +21,7 @@ export class TripRepository {
   update(id: string, input: TripInput, plan: TripPlan): TripRecord {
     const [updated] = getDb()
       .update(trips)
-      .set({ version: sql`${trips.version} + 1`, input, plan, updatedAt: new Date().toISOString() })
+      .set({ version: sql`${trips.version} + 1`, plan, isPublic: input.isPublic ?? false, updatedAt: new Date().toISOString() })
       .where(eq(trips.id, id))
       .returning()
       .all();
@@ -51,10 +51,10 @@ function toTripRecord(row: TripRow): TripRecord {
   return {
     id: row.id,
     userId: row.userId,
+    isPublic: row.isPublic,
     version: row.version,
     createdAt: row.createdAt,
     ...(row.updatedAt ? { updatedAt: row.updatedAt } : {}),
-    input: row.input,
     plan: row.plan,
   };
 }
