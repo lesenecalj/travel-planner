@@ -13,3 +13,7 @@ coverage/
 Thumbs.db
 .idea/
 *.swp
+
+*.db
+*.db-shm
+*.db-wal

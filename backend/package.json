@@ -2,10 +2,13 @@
   "name": "travel-planner-backend",
   "version": "1.0.0",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "concurrently --names \"ollama,server\" --prefix-colors \"yellow,cyan\" \"npm run llm:local:serve\" \"npm run start\"",
+    "start": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start:prod": "node dist/index.js",
     "db:generate": "drizzle-kit generate",
+    "llm:local:serve": "ollama serve || true",
+    "llm:local:pull": "ollama pull ${LLM_MODEL:-llama3.1}",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -28,6 +31,7 @@
     "@types/node": "^25.5.2",
     "drizzle-kit": "^0.31.10",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "concurrently": "^9.2.1"
   }
 }
