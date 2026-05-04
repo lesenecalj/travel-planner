@@ -1,5 +1,5 @@
 import { PlannerAgent } from "../agents/planner-agent";
-import { TripInput, TripInputSchema, TripRecord, TripDto } from "../types/trip";
+import { TripInput, TripRecord, TripDto } from "../types/trip";
 import { TripRepository } from "../repositories/trip-repository";
 import { NotFoundError } from "../errors";
 
@@ -20,12 +20,11 @@ export class TripService {
     return toTripDto(this.repo.create(input, plan, userId));
   }
 
-  async updateTrip(id: string, overrides: Partial<TripInput>): Promise<TripDto> {
+  async updateTrip(id: string, input: TripInput): Promise<TripDto> {
     const existing = this.repo.findById(id);
     if (!existing) throw new NotFoundError(`Trip not found: ${id}`);
-    const merged = TripInputSchema.parse({ ...existing.input, ...overrides });
-    const plan = await this.planner.run(merged);
-    return toTripDto(this.repo.update(id, merged, plan));
+    const plan = await this.planner.run(input);
+    return toTripDto(this.repo.update(id, input, plan));
   }
 
   getTrip(id: string): TripDto | null {
@@ -43,7 +42,8 @@ export class TripService {
 
   deleteTrip(id: string): TripDto | null {
     const record = this.repo.delete(id);
-    return record ? toTripDto(record) : null;
+    if(!record) throw new NotFoundError(`Trip not found: ${id}`);
+    return toTripDto(record);
   }
 }
 
