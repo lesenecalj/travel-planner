@@ -1,9 +1,9 @@
 import { api } from './api';
-import type { Trip, TripInput, AuthTokens, User } from '../types';
+import type { Trip, TripInput, AuthTokens } from '../types';
 
 // Auth
-export const register = async (name: string, email: string, password: string): Promise<User> => {
-  const { data } = await api.post<User>('/users', { name, email, password });
+export const register = async (name: string, email: string, password: string): Promise<AuthTokens> => {
+  const { data } = await api.post<AuthTokens>('/users', { name, email, password });
   return data;
 };
 

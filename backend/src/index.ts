@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import tripRouter from "./routes/trip";
 import userRouter from "./routes/user";
@@ -11,7 +12,11 @@ import { closeDb } from "./db/database";
 
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_ORIGIN ?? "http://localhost:5173",
+  credentials: true,
+}));
+app.use(cookieParser());
 app.use(express.json());
 
 const limiter = rateLimit({

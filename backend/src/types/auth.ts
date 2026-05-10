@@ -15,4 +15,6 @@ export type AuthTokens = {
 export type JwtPayload = {
   sub: string;  // userId
   email: string;
+  iat?: number;
+  exp?: number;
 };
