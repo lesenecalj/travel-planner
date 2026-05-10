@@ -1,4 +1,4 @@
-import { Layout, Button, Spin, theme } from 'antd';
+import { Layout, Button, theme } from 'antd';
 import { LogoutOutlined } from '@ant-design/icons';
 import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -6,16 +6,8 @@ import { useAuth } from '../contexts/AuthContext';
 const { Header, Content } = Layout;
 
 export default function AppLayout() {
-  const { isAuthenticated, isRestoring, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
   const { token } = theme.useToken();
-
-  if (isRestoring) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spin size="large" />
-      </div>
-    );
-  }
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 

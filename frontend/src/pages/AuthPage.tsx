@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Form, Input, Button, Card, Typography, Alert, Tabs } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { login, register } from '../lib/tripApi';
+import { login } from '../lib/authApi';
+import { register } from '../lib/userApi';
 import { useAuth } from '../contexts/AuthContext';
 
 const { Title } = Typography;

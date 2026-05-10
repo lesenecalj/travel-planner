@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
-import axios from 'axios';
+import { Spin } from 'antd';
 import { api } from '../lib/api';
 import { authStore } from '../lib/auth-store';
+import { refresh, logout as apiLogout } from '../lib/authApi';
 
 type AuthContextValue = {
   isAuthenticated: boolean;
-  isRestoring: boolean; // true while the silent refresh is in flight on page load
   login: (accessToken: string) => void;
   logout: () => void;
 };
@@ -24,16 +24,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     authStore.set(null);
     setIsAuthenticated(false);
-    api.post('/auth/logout').catch(() => {});
+    apiLogout().catch(() => {});
   }, []);
 
   // On every page load, try to get a fresh access token using the httpOnly cookie.
-  // If the cookie is missing or expired the request will 401 and the user goes to /login.
   useEffect(() => {
-    axios
-      .post<{ accessToken: string }>('/api/auth/refresh', {}, { withCredentials: true })
-      .then(({ data }) => {
-        authStore.set(data.accessToken);
+    refresh()
+      .then((accessToken) => {
+        authStore.set(accessToken);
         setIsAuthenticated(true);
       })
       .catch(() => {
@@ -44,14 +42,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setIsRestoring(false));
   }, []);
 
+  // Register the 401 response interceptor here so it has direct closure access
+  // to `logout` — no global bridge needed. Ejected on unmount.
   useEffect(() => {
-    window.__authLogout = logout;
-    return () => { delete window.__authLogout; };
+    const id = api.interceptors.response.use(
+      (res) => res,
+      async (error) => {
+        const original = error.config;
+        if (error.response?.status === 401 && !original._retry) {
+          original._retry = true;
+          try {
+            const accessToken = await refresh();
+            authStore.set(accessToken);
+            original.headers.Authorization = `Bearer ${accessToken}`;
+            return api(original);
+          } catch {
+            authStore.set(null);
+            logout();
+          }
+        }
+        return Promise.reject(error);
+      },
+    );
+    return () => api.interceptors.response.eject(id);
   }, [logout]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isRestoring, login, logout }}>
-      {children}
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+      {isRestoring ? (
+        <div className="flex items-center justify-center min-h-screen">
+          <Spin size="large" />
+        </div>
+      ) : children}
     </AuthContext.Provider>
   );
 }
