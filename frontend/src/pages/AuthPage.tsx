@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Form, Input, Button, Card, Typography, Alert, Tabs } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { login, register } from '../lib/tripApi';
+import { login } from '../lib/authApi';
+import { register } from '../lib/userApi';
 import { useAuth } from '../contexts/AuthContext';
 
 const { Title } = Typography;
@@ -20,8 +21,8 @@ function LoginTab() {
     setLoading(true);
     setError(null);
     try {
-      const tokens = await login(values.email, values.password);
-      setTokens(tokens);
+      const { accessToken } = await login(values.email.trim(), values.password);
+      setTokens(accessToken);
       navigate('/');
     } catch {
       setError('Email ou mot de passe incorrect.');
@@ -33,20 +34,20 @@ function LoginTab() {
   return (
     <>
       {error && <Alert type="error" message={error} className="mb-4" />}
-      <Form layout="vertical" onFinish={onFinish} autoComplete="off">
+      <Form layout="vertical" onFinish={onFinish} autoComplete="on">
         <Form.Item
           label="Email"
           name="email"
           rules={[{ required: true, type: 'email', message: 'Email invalide' }]}
         >
-          <Input autoFocus />
+          <Input autoFocus autoComplete="email" />
         </Form.Item>
         <Form.Item
           label="Mot de passe"
           name="password"
           rules={[{ required: true, message: 'Mot de passe requis' }]}
         >
-          <Input.Password />
+          <Input.Password autoComplete="current-password" />
         </Form.Item>
         <Button type="primary" htmlType="submit" block loading={loading}>
           Se connecter
@@ -66,9 +67,8 @@ function RegisterTab() {
     setLoading(true);
     setError(null);
     try {
-      await register(values.name, values.email, values.password);
-      const tokens = await login(values.email, values.password);
-      setTokens(tokens);
+      const { accessToken } = await register(values.name, values.email.trim(), values.password);
+      setTokens(accessToken);
       navigate('/');
     } catch (e: unknown) {
       const serverMsg: string = axios.isAxiosError(e) ? (e.response?.data?.error ?? '') : '';
@@ -81,27 +81,27 @@ function RegisterTab() {
   return (
     <>
       {error && <Alert type="error" message={error} className="mb-4" />}
-      <Form layout="vertical" onFinish={onFinish} autoComplete="off">
+      <Form layout="vertical" onFinish={onFinish} autoComplete="on">
         <Form.Item
           label="Nom"
           name="name"
           rules={[{ required: true, message: 'Nom requis' }]}
         >
-          <Input autoFocus />
+          <Input autoFocus autoComplete="name" />
         </Form.Item>
         <Form.Item
           label="Email"
           name="email"
           rules={[{ required: true, type: 'email', message: 'Email invalide' }]}
         >
-          <Input />
+          <Input autoComplete="email" />
         </Form.Item>
         <Form.Item
           label="Mot de passe"
           name="password"
           rules={[{ required: true, min: 8, message: 'Minimum 8 caractères' }]}
         >
-          <Input.Password />
+          <Input.Password autoComplete="new-password" />
         </Form.Item>
         <Form.Item
           label="Confirmer le mot de passe"
@@ -117,7 +117,7 @@ function RegisterTab() {
             }),
           ]}
         >
-          <Input.Password />
+          <Input.Password autoComplete="new-password" />
         </Form.Item>
         <Button type="primary" htmlType="submit" block loading={loading}>
           Créer un compte

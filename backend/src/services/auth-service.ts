@@ -7,11 +7,18 @@ import { UnauthorizedError } from "../errors";
 const BCRYPT_ROUNDS = 12;
 const ACCESS_TOKEN_TTL = "15m";
 const REFRESH_TOKEN_TTL = "7d";
+const JWT_ALGORITHM = "HS256" as const;
 
-function getSecret(): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) throw new Error("JWT_SECRET environment variable is not set");
-  return secret;
+// Pre-computed once at startup. Used to keep bcrypt running its full work factor
+// when the user doesn't exist, preventing timing-based email enumeration.
+const DUMMY_HASH = bcrypt.hashSync("timing_guard", BCRYPT_ROUNDS);
+
+function getSecrets(): { access: string; refresh: string } {
+  const access = process.env.JWT_ACCESS_SECRET;
+  const refresh = process.env.JWT_REFRESH_SECRET;
+  if (!access) throw new Error("JWT_ACCESS_SECRET environment variable is not set");
+  if (!refresh) throw new Error("JWT_REFRESH_SECRET environment variable is not set");
+  return { access, refresh };
 }
 
 export class AuthService {
@@ -23,17 +30,17 @@ export class AuthService {
 
   async login(input: LoginInput): Promise<AuthTokens> {
     const user = this.repo.findByEmail(input.email);
-    if (!user) throw new UnauthorizedError("Invalid credentials");
 
-    const valid = await bcrypt.compare(input.password, user.passwordHash);
-    if (!valid) throw new UnauthorizedError("Invalid credentials");
+    // Always run bcrypt to prevent timing-based user enumeration
+    const valid = await bcrypt.compare(input.password, user?.passwordHash ?? DUMMY_HASH);
+    if (!user || !valid) throw new UnauthorizedError("Invalid credentials");
 
     return this.generateTokens({ sub: user.id, email: user.email });
   }
 
   refreshTokens(refreshToken: string): AuthTokens {
     try {
-      const payload = jwt.verify(refreshToken, getSecret()) as JwtPayload;
+      const payload = jwt.verify(refreshToken, getSecrets().refresh, { algorithms: [JWT_ALGORITHM] }) as JwtPayload;
       return this.generateTokens({ sub: payload.sub, email: payload.email });
     } catch {
       throw new UnauthorizedError("Invalid or expired refresh token");
@@ -42,17 +49,17 @@ export class AuthService {
 
   verifyAccessToken(token: string): JwtPayload {
     try {
-      return jwt.verify(token, getSecret()) as JwtPayload;
+      return jwt.verify(token, getSecrets().access, { algorithms: [JWT_ALGORITHM] }) as JwtPayload;
     } catch {
       throw new UnauthorizedError("Invalid or expired token");
     }
   }
 
-  private generateTokens(payload: JwtPayload): AuthTokens {
-    const secret = getSecret();
+  generateTokens(payload: JwtPayload): AuthTokens {
+    const { access, refresh } = getSecrets();
     return {
-      accessToken: jwt.sign(payload, secret, { expiresIn: ACCESS_TOKEN_TTL }),
-      refreshToken: jwt.sign(payload, secret, { expiresIn: REFRESH_TOKEN_TTL }),
+      accessToken: jwt.sign(payload, access, { expiresIn: ACCESS_TOKEN_TTL, algorithm: JWT_ALGORITHM }),
+      refreshToken: jwt.sign(payload, refresh, { expiresIn: REFRESH_TOKEN_TTL, algorithm: JWT_ALGORITHM }),
     };
   }
 }
