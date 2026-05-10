@@ -32,7 +32,7 @@ router.post("/refresh", authLimiter, (req: Request, res: Response) => {
 });
 
 router.post("/logout", (_req: Request, res: Response) => {
-  res.clearCookie("refreshToken", { path: "/" });
+  res.clearCookie("refreshToken", { path: "/auth" });
   res.status(204).send();
 });
 

@@ -7,6 +7,7 @@
     "build": "tsc",
     "start:prod": "node dist/index.js",
     "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "llm:local:serve": "ollama serve || true",
     "llm:local:pull": "ollama pull ${LLM_MODEL:-llama3.1}",
     "test": "echo \"Error: no test specified\" && exit 1"
