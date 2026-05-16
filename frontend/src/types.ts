@@ -1,14 +1,27 @@
+export type TravelInterest = 'outdoor' | 'cultural' | 'food' | 'leisure';
+export type InterestWeights = Record<TravelInterest, 0 | 1 | 2 | 3>;
+
 export type TripInput = {
   destination: string;
   durationWeeks: number;
   pace: 'slow' | 'normal' | 'fast';
-  interests: string[];
+  interests: InterestWeights;
   label?: string;
+};
+
+export type Activity = {
+  name: string;
+  description: string;
+  duration: string;
+  timeOfDay: 'morning' | 'afternoon' | 'evening';
+  type: 'cultural' | 'food' | 'outdoor' | 'transport' | 'leisure';
+  tip?: string;
 };
 
 export type DayPlan = {
   day: number;
-  activities: string[];
+  city: string;
+  activities: Activity[];
 };
 
 export type WeekPlan = {
