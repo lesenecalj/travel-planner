@@ -42,10 +42,14 @@ export class PlannerAgent {
   }
 
   private buildPrompt(input: TripInput): string {
+    const interestLines = (Object.entries(input.interests) as [string, number][])
+      .filter(([, w]) => w > 0)
+      .map(([f, w]) => `${f} (level ${w})`)
+      .join(", ");
     return `Generate a detailed trip plan for the following trip:
 - Destination: ${input.destination}
 - Duration: ${input.durationWeeks} week(s)
 - Pace: ${input.pace}
-- Interests: ${input.interests.join(", ")}`;
+- Interests: ${interestLines || "general"}`;
   }
 }
