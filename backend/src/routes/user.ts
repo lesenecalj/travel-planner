@@ -19,11 +19,8 @@ router.post("/", async (req: Request, res: Response) => {
   res.status(201).json({ accessToken });
 });
 
-router.get("/", requireAuth, (_req: Request, res: Response) => {
-  res.json(service.listUsers());
-});
-
 router.get("/:id", requireAuth, (req: Request, res: Response) => {
+  if (req.auth.sub !== req.params.id) throw new ForbiddenError("Access denied");
   const user = service.getUser(req.params.id as string);
   if (!user) throw new NotFoundError("User not found");
   res.json(user);
