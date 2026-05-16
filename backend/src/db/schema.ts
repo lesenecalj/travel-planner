@@ -1,5 +1,5 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { TripPlan } from "../types/trip";
+import { TripPlan, InterestWeights } from "../types/trip";
 
 export const users = sqliteTable("users", {
   id:           text("id").primaryKey(),
@@ -18,7 +18,7 @@ export const trips = sqliteTable("trips", {
   destination: text("destination").notNull(),
   durationWeeks: integer("duration_weeks").notNull(),
   pace: text("pace", { enum: ["slow", "normal", "fast"] }).notNull(),
-  interests: text("interests", { mode: "json" }).$type<string[]>().notNull(),
+  interests: text("interests", { mode: "json" }).$type<InterestWeights>().notNull(),
   label: text("label"),
   isPublic:  integer("is_public", { mode: "boolean" }).notNull().default(false),
   version:   integer("version").notNull().default(1),
