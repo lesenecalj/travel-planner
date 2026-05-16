@@ -2,8 +2,7 @@ import bcrypt from "bcryptjs";
 import { UserDto, UserRecord, UserInput, UserUpdateInput } from "../types/user";
 import { UserRepository } from "../repositories/user-repository";
 import { NotFoundError, ConflictError } from "../errors";
-
-const BCRYPT_ROUNDS = 12;
+import { BCRYPT_ROUNDS } from "../lib/constants";
 
 function toUserDto({ passwordHash: _, ...dto }: UserRecord): UserDto {
   return dto;
@@ -17,8 +16,6 @@ export class UserService {
   }
 
   async createUser(input: UserInput): Promise<UserDto> {
-    const existing = this.repo.findByEmail(input.email);
-    if (existing) throw new ConflictError(`Email already in use: ${input.email}`);
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
     const { password: _, ...rest } = input;
     return toUserDto(this.repo.create({ ...rest, passwordHash }));
