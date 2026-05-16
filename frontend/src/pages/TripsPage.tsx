@@ -2,10 +2,25 @@ import { Button, Card, Tag, Empty, Spin, Popconfirm, Typography } from 'antd';
 import { PlusOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTrips, useDeleteTrip } from '../hooks/useTrips';
+import type { TravelInterest } from '../types';
 
 const { Title, Text } = Typography;
 
 const PACE_COLOR = { slow: 'green', normal: 'blue', fast: 'orange' } as const;
+
+const INTEREST_LABEL: Record<TravelInterest, string> = {
+  outdoor:  'Outdoor',
+  cultural: 'Cultural',
+  food:     'Food',
+  leisure:  'Leisure',
+};
+
+const INTEREST_COLOR: Record<TravelInterest, string> = {
+  outdoor:  'green',
+  cultural: 'purple',
+  food:     'orange',
+  leisure:  'cyan',
+};
 
 export default function TripsPage() {
   const { data: trips, isLoading } = useTrips();
@@ -57,7 +72,9 @@ export default function TripsPage() {
               <div className="mt-2 flex flex-wrap gap-1">
                 <Tag color={PACE_COLOR[trip.pace]}>{trip.pace}</Tag>
                 <Tag>{trip.durationWeeks} sem.</Tag>
-                {trip.interests.map((i) => <Tag key={i}>{i}</Tag>)}
+                {(Object.entries(trip.interests) as [TravelInterest, number][]).filter(([, w]) => w > 0).map(([i]) => (
+                  <Tag key={i} color={INTEREST_COLOR[i]}>{INTEREST_LABEL[i]}</Tag>
+                ))}
               </div>
             </Card>
           ))}
