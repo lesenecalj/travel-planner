@@ -52,12 +52,12 @@ export default function TripDetailPage() {
       </Button>
 
       <div className="mb-6">
-        <Title level={2}>{trip.input.label ?? trip.input.destination}</Title>
+        <Title level={2}>{trip.label ?? trip.destination}</Title>
         <div className="flex flex-wrap gap-2 items-center">
-          <Text type="secondary">{trip.input.destination}</Text>
-          <Tag>{trip.input.durationWeeks} semaines</Tag>
-          <Tag color="blue">{trip.input.pace}</Tag>
-          {trip.input.interests.map((i) => <Tag key={i}>{i}</Tag>)}
+          <Text type="secondary">{trip.destination}</Text>
+          <Tag>{trip.durationWeeks} semaines</Tag>
+          <Tag color="blue">{trip.pace}</Tag>
+          {trip.interests.map((i) => <Tag key={i}>{i}</Tag>)}
         </div>
       </div>
 

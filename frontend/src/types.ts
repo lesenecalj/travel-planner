@@ -21,14 +21,12 @@ export type TripPlan = {
   weeks: WeekPlan[];
 };
 
-export type Trip = {
+export type Trip = TripInput & {
   id: string;
   userId: string;
-  isPublic: boolean;
   version: number;
   createdAt: string;
   updatedAt?: string;
-  input: TripInput;
   plan: TripPlan;
 };
 

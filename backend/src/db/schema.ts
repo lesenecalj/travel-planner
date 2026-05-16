@@ -15,6 +15,11 @@ export type UserRow = typeof users.$inferSelect;
 export const trips = sqliteTable("trips", {
   id:        text("id").primaryKey(),
   userId:    text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  destination: text("destination").notNull(),
+  durationWeeks: integer("duration_weeks").notNull(),
+  pace: text("pace", { enum: ["slow", "normal", "fast"] }).notNull(),
+  interests: text("interests", { mode: "json" }).$type<string[]>().notNull(),
+  label: text("label"),
   isPublic:  integer("is_public", { mode: "boolean" }).notNull().default(false),
   version:   integer("version").notNull().default(1),
   createdAt: text("created_at").notNull(),

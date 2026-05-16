@@ -2,6 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "../db/database";
 import { users, UserRow } from "../db/schema";
 import { UserRecord, UserUpdateInput, CreateUserRecord } from "../types/user";
+import { ConflictError } from "../errors";
 
 export class UserRepository {
   create(data: CreateUserRecord): UserRecord {
@@ -13,7 +14,13 @@ export class UserRepository {
       createdAt: new Date().toISOString(),
       updatedAt: null,
     };
-    getDb().insert(users).values(row).run();
+    try {
+      getDb().insert(users).values(row).run();
+    } catch (e: unknown) {
+      if (e instanceof Error && 'code' in e && e.code === 'SQLITE_CONSTRAINT_UNIQUE' && e.message.includes('users.email'))
+        throw new ConflictError(`Email already in use: ${data.email}`);
+      throw e;
+    }
     return toUserRecord(row);
   }
 
