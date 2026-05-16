@@ -3,8 +3,9 @@ import bcrypt from "bcryptjs";
 import { UserRepository } from "../repositories/user-repository";
 import { AuthTokens, JwtPayload, LoginInput } from "../types/auth";
 import { UnauthorizedError } from "../errors";
+import { UserRecord } from "../types/user";
+import { BCRYPT_ROUNDS } from "../lib/constants";
 
-const BCRYPT_ROUNDS = 12;
 const ACCESS_TOKEN_TTL = "15m";
 const REFRESH_TOKEN_TTL = "7d";
 const JWT_ALGORITHM = "HS256" as const;
@@ -39,12 +40,15 @@ export class AuthService {
   }
 
   refreshTokens(refreshToken: string): AuthTokens {
+    let payload: JwtPayload;
     try {
-      const payload = jwt.verify(refreshToken, getSecrets().refresh, { algorithms: [JWT_ALGORITHM] }) as JwtPayload;
-      return this.generateTokens({ sub: payload.sub, email: payload.email });
+      payload = jwt.verify(refreshToken, getSecrets().refresh, { algorithms: [JWT_ALGORITHM] }) as JwtPayload;
     } catch {
       throw new UnauthorizedError("Invalid or expired refresh token");
     }
+    const user: UserRecord | null = this.repo.findById(payload.sub);
+    if (!user) throw new UnauthorizedError("Invalid or expired refresh token");
+    return this.generateTokens({ sub: user.id, email: user.email });
   }
 
   verifyAccessToken(token: string): JwtPayload {
