@@ -8,6 +8,11 @@ export class TripRepository {
     const row: TripRow = {
       id: crypto.randomUUID(),
       userId,
+      destination: input.destination,
+      durationWeeks: input.durationWeeks,
+      pace: input.pace,
+      interests: input.interests,
+      label: input.label ?? null,
       isPublic: input.isPublic ?? false,
       version: 1,
       createdAt: new Date().toISOString(),
@@ -21,7 +26,17 @@ export class TripRepository {
   update(id: string, input: TripInput, plan: TripPlan): TripRecord {
     const [updated] = getDb()
       .update(trips)
-      .set({ version: sql`${trips.version} + 1`, plan, isPublic: input.isPublic ?? false, updatedAt: new Date().toISOString() })
+      .set({
+        destination: input.destination,
+        durationWeeks: input.durationWeeks,
+        pace: input.pace,
+        interests: input.interests,
+        label: input.label ?? null,
+        version: sql`${trips.version} + 1`,
+        plan,
+        isPublic: input.isPublic ?? false,
+        updatedAt: new Date().toISOString(),
+      })
       .where(eq(trips.id, id))
       .returning()
       .all();
@@ -51,6 +66,11 @@ function toTripRecord(row: TripRow): TripRecord {
   return {
     id: row.id,
     userId: row.userId,
+    destination: row.destination,
+    durationWeeks: row.durationWeeks,
+    pace: row.pace,
+    interests: row.interests,
+    ...(row.label ? { label: row.label } : {}),
     isPublic: row.isPublic,
     version: row.version,
     createdAt: row.createdAt,

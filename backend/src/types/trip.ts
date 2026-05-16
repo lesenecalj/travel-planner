@@ -30,10 +30,9 @@ export type DayPlan = z.infer<typeof DayPlanSchema>;
 export type WeekPlan = z.infer<typeof WeekPlanSchema>;
 export type TripPlan = z.infer<typeof TripPlanSchema>;
 
-export type TripRecord = {
+export type TripRecord = TripInput & {
   id: string;
   userId: string;
-  isPublic: boolean;
   version: number;
   createdAt: string;
   updatedAt?: string;
