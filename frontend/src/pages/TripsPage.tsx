@@ -36,7 +36,7 @@ export default function TripsPage() {
           {trips.map((trip) => (
             <Card
               key={trip.id}
-              title={<span className="font-semibold">{trip.input.label ?? trip.input.destination}</span>}
+              title={<span className="font-semibold">{trip.label ?? trip.destination}</span>}
               extra={
                 <div className="flex gap-2">
                   <Link to={`/trips/${trip.id}`}>
@@ -53,11 +53,11 @@ export default function TripsPage() {
                 </div>
               }
             >
-              <Text type="secondary">{trip.input.destination}</Text>
+              <Text type="secondary">{trip.destination}</Text>
               <div className="mt-2 flex flex-wrap gap-1">
-                <Tag color={PACE_COLOR[trip.input.pace]}>{trip.input.pace}</Tag>
-                <Tag>{trip.input.durationWeeks} sem.</Tag>
-                {trip.input.interests.map((i) => <Tag key={i}>{i}</Tag>)}
+                <Tag color={PACE_COLOR[trip.pace]}>{trip.pace}</Tag>
+                <Tag>{trip.durationWeeks} sem.</Tag>
+                {trip.interests.map((i) => <Tag key={i}>{i}</Tag>)}
               </div>
             </Card>
           ))}
